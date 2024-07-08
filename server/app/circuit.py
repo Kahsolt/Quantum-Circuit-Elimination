@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import random
-from enum import Enum
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Union, Optional, NamedTuple
@@ -16,6 +15,18 @@ from app.sdata import GameConst
 
 D_GATE = ['CZ', 'CNOT', 'SWAP', 'iSWAP']
 P_GATE = ['RX', 'RY', 'RZ']
+
+
+@dataclass
+class XGate:
+  name: str
+  param: Optional[float] = None
+
+  def clone(self) -> IGate:
+    return deepcopy(self)
+
+  def json(self):
+    return [self.name, self.param]
 
 
 @dataclass
@@ -34,7 +45,10 @@ class IGate:
 
 @dataclass
 class ICircuit:
-  gates: List[IGate] = field(default=list)
+  gates: List[IGate] = field(default_factory=list)
+
+  def __len__(self) -> int:
+    return len(self.gates)
 
   def __getitem__(self, idx:int) -> IGate:
     return self.gates[idx]
@@ -53,7 +67,7 @@ class ICircuit:
     return [g.json() for g in self.gates]
 
 
-class SettleType(Enum):
+class SettleType:
   Append = 'Append'
   Fuse = 'Fuse'
   Eliminate = 'Eliminate'
@@ -66,18 +80,15 @@ class SettleResult(NamedTuple):
   score: int = 0
 
 
-def rand_gate() -> IGate:
-  names = GameConst.gate_pool.keys()
-  weights = GameConst.gate_pool.values()
-  name = np.random.choice(names, p=weights)
-  gate = IGate(name)
-  if name in P_GATE:
-    # (1/8 ~ 7/8) * 2*pi
-    gate.param = random.randrange(1, 8) / 2*pi
-  return gate
+def rand_gate() -> XGate:
+  names = GameConst.gate_pool_names
+  prob = GameConst.gate_pool_probs
+  name = np.random.choice(names, p=prob)
+  param = (random.choice(GameConst.rand_gate_rot) / 4 * pi) if name in P_GATE else None
+  return XGate(name, param)
 
 
-def check_circuit_full(circuit:ICircuit, gates:List[IGate], n_qubit:int, max_depth:int) -> bool:
+def get_circuit_depth(circuit:ICircuit, n_qubit:int) -> List[int]:
   depth = [0] * n_qubit
   for gate in circuit:
     if gate.control_qubit is None:
@@ -88,6 +99,20 @@ def check_circuit_full(circuit:ICircuit, gates:List[IGate], n_qubit:int, max_dep
       v = gate.control_qubit
       maxD = max(depth[u], depth[v])
       depth[u] = depth[v] = maxD + 1
+  return depth
+
+
+def check_gate_put(circuit:ICircuit, gate:IGate, n_qubit:int, max_depth:int) -> bool:
+  depth = get_circuit_depth(circuit, n_qubit)
+  if gate.control_qubit is not None:
+    D = max(depth[gate.target_qubit], depth[gate.control_qubit]) + 1
+  else:
+    D = depth[gate.target_qubit] + 1
+  return D <= max_depth
+
+
+def check_circuit_full(circuit:ICircuit, gates:List[IGate], n_qubit:int, max_depth:int) -> bool:
+  depth = get_circuit_depth(circuit, n_qubit)
   has_single = False
   for gate in gates:
     if gate.name not in D_GATE:
@@ -100,10 +125,15 @@ def settle_circuit(circuit:ICircuit, gate:IGate) -> SettleResult:
   # TODO： 结算线路操作
   # settle order: Eliminate -> Fuse -> Append
 
-  effected_qubits = [it for it in [gate.target_qubit, gate.control_qubit] if it is not None]
-  effected_gates = try_collapse_circuit(circuit, effected_qubits)
+  #effected_qubits = [it for it in [gate.target_qubit, gate.control_qubit] if it is not None]
+  #effected_gates = try_collapse_circuit(circuit, effected_qubits)
 
-  return SettleResult(SettleType.Append, circuit.clone(), effected_gates, 0)
+  circuit_new = circuit.clone()
+  circuit_new.append(gate)
+  score = int(GameConst.score_gate[gate.name] * GameConst.score_ratio_gate_append)
+  effected_gates = [len(circuit_new)]
+
+  return SettleResult(SettleType.Append, circuit_new.clone(), effected_gates, score)
 
 
 def try_collapse_circuit(circuit:ICircuit, effected_qubits:List[int]) -> List[int]:

@@ -31,6 +31,15 @@ enum SettleType {
   Eliminate = 'Eliminate'
 }
 
+// representing a detached gate
+// schema: [gate_name, param]
+// e.g.: 
+//   ["X", null]
+//   ["RZ", 2.33]
+//   ["SWAP", null]
+type XGate = [str, float | null]
+
+// representing an attached gate in the ciruit
 // schema: [gate_name, param, target_qubit, control_qubit]
 // e.g.: 
 //   ["H", null, 0, null]
@@ -42,8 +51,8 @@ interface PlayerData {
   id: str             // 游戏ID
   state: GameState    // 游戏阶段状态
   circuit: IGate[]    // 当前线路构筑
-  cur_gate: IGate[]   // 当前可拖动的门
-  nxt_gate: IGate     // 预备可用的门
+  cur_gate: XGate[]   // 当前可拖动的门
+  nxt_gate: XGate     // 预备可用的门
   score: int          // 当前得分
   token: int          // 提示道具数量
   bingo: int          // 消去次数
@@ -53,6 +62,7 @@ interface PlayerData {
   ts_end: int         // 结束时间
 }
 
+// representing a play record
 // schema: [player_name, score, bingo, ts_end]
 type Record = [str, int, int, int]
 ```
@@ -113,6 +123,21 @@ interface ResponseData {
       score: int              // 预计得分
     }
   ]
+}
+```
+
+----
+
+### POST /cheat/item 作弊: 获取物品
+
+```typescript
+interface Request {
+  id: str               // 游戏ID
+  item: str             // 'score' or 'token'
+  count: int = 10
+}
+interface ResponseData {
+
 }
 ```
 

@@ -49,6 +49,15 @@
   Eliminate <span class="token operator">=</span> <span class="token string">'Eliminate'</span>
 <span class="token punctuation">}</span>
 
+<span class="token comment">// representing a detached gate</span>
+<span class="token comment">// schema: [gate_name, param]</span>
+<span class="token comment">// e.g.: </span>
+<span class="token comment">//   ["X", null]</span>
+<span class="token comment">//   ["RZ", 2.33]</span>
+<span class="token comment">//   ["SWAP", null]</span>
+<span class="token keyword keyword-type">type</span> <span class="token class-name">XGate</span> <span class="token operator">=</span> <span class="token punctuation">[</span>str<span class="token punctuation">,</span> float <span class="token operator">|</span> <span class="token keyword keyword-null">null</span><span class="token punctuation">]</span>
+
+<span class="token comment">// representing an attached gate in the ciruit</span>
 <span class="token comment">// schema: [gate_name, param, target_qubit, control_qubit]</span>
 <span class="token comment">// e.g.: </span>
 <span class="token comment">//   ["H", null, 0, null]</span>
@@ -60,8 +69,8 @@
   id<span class="token operator">:</span> str             <span class="token comment">// 游戏ID</span>
   state<span class="token operator">:</span> GameState    <span class="token comment">// 游戏阶段状态</span>
   circuit<span class="token operator">:</span> IGate<span class="token punctuation">[</span><span class="token punctuation">]</span>    <span class="token comment">// 当前线路构筑</span>
-  cur_gate<span class="token operator">:</span> IGate<span class="token punctuation">[</span><span class="token punctuation">]</span>   <span class="token comment">// 当前可拖动的门</span>
-  nxt_gate<span class="token operator">:</span> IGate     <span class="token comment">// 预备可用的门</span>
+  cur_gate<span class="token operator">:</span> XGate<span class="token punctuation">[</span><span class="token punctuation">]</span>   <span class="token comment">// 当前可拖动的门</span>
+  nxt_gate<span class="token operator">:</span> XGate     <span class="token comment">// 预备可用的门</span>
   score<span class="token operator">:</span> int          <span class="token comment">// 当前得分</span>
   token<span class="token operator">:</span> int          <span class="token comment">// 提示道具数量</span>
   bingo<span class="token operator">:</span> int          <span class="token comment">// 消去次数</span>
@@ -71,6 +80,7 @@
   ts_end<span class="token operator">:</span> int         <span class="token comment">// 结束时间</span>
 <span class="token punctuation">}</span>
 
+<span class="token comment">// representing a play record</span>
 <span class="token comment">// schema: [player_name, score, bingo, ts_end]</span>
 <span class="token keyword keyword-type">type</span> <span class="token class-name">Record</span> <span class="token operator">=</span> <span class="token punctuation">[</span>str<span class="token punctuation">,</span> int<span class="token punctuation">,</span> int<span class="token punctuation">,</span> int<span class="token punctuation">]</span>
 </code></pre><hr>
@@ -114,6 +124,16 @@
       score<span class="token operator">:</span> int              <span class="token comment">// 预计得分</span>
     <span class="token punctuation">}</span>
   <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre><hr>
+<h3 id="post-cheatitem-作弊-获取物品">POST /cheat/item 作弊: 获取物品 </h3>
+<pre data-role="codeBlock" data-info="typescript" class="language-typescript typescript"><code><span class="token keyword keyword-interface">interface</span> <span class="token class-name">Request</span> <span class="token punctuation">{</span>
+  id<span class="token operator">:</span> str               <span class="token comment">// 游戏ID</span>
+  item<span class="token operator">:</span> str             <span class="token comment">// 'score' or 'token'</span>
+  count<span class="token operator">:</span> int <span class="token operator">=</span> <span class="token number">10</span>
+<span class="token punctuation">}</span>
+<span class="token keyword keyword-interface">interface</span> <span class="token class-name">ResponseData</span> <span class="token punctuation">{</span>
+
 <span class="token punctuation">}</span>
 </code></pre><hr>
 <h3 id="get-histlisthistlist-查看历史游戏记录">GET <a href="..\..\hist\list">/hist/list</a> 查看历史游戏记录 </h3>

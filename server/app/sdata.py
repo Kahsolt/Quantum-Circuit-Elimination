@@ -2,6 +2,8 @@
 # Author: Armit
 # Create Time: 2024/07/08 
 
+import numpy as np
+
 class GameConst:
   # 线路宽度
   n_qubit = 5
@@ -23,8 +25,8 @@ class GameConst:
     'X2M': 10,
     'Y2P': 10,
     'Y2M': 10,
-    'T': 10,
-    'TD': 10,
+    'T': 0,
+    'TD': 0,
     'S': 10,
     'SD': 10,
     'RX': 25,
@@ -35,6 +37,12 @@ class GameConst:
     'SWAP': 5,
     'iSWAP': 5,
   }
+  gate_pool_names = list(gate_pool.keys())
+  gate_pool_weights = np.asarray(list(gate_pool.values()))
+  gate_pool_probs = (gate_pool_weights / gate_pool_weights.sum()).tolist()
+  # 旋转门的随机转角 (以 π/4 为单位)
+  rand_gate_rot = [-4, -2, 2, 4]
+  rand_gate_rot_unit = np.pi / 4
   # 量子门基础分值
   score_gate = {
     'H': 5,

@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from uuid import uuid1
 from time import time
 from typing import List, Set, Dict, Any
@@ -14,7 +13,7 @@ from app.sdata import GameConst
 from app.utils import HandlerRet
 
 
-class GameState(Enum):
+class GameState:
   INIT = 'INIT'
   RUN  = 'RUN'
   END  = 'END'
@@ -29,8 +28,8 @@ class Game:
     self.id = str(uuid1())
     self.state = GameState.INIT
     self.circuit = ICircuit()
-    self.cur_gate: List[IGate] = []
-    self.nxt_gate: IGate = None
+    self.cur_gate: List[XGate] = []
+    self.nxt_gate: XGate = None
     self.score = 0
     self.token = 0
     self.bingo = 0
@@ -63,9 +62,9 @@ class Game:
 
   def shift_gate_queue(self) -> bool:
     cur_gate_len = 0
-    for lim, len in GameConst.cur_gate_len_lv:
-      if self.score > lim:
-        cur_gate_len = len
+    for lim, nlen in GameConst.cur_gate_len_lv:
+      if self.score >= lim:
+        cur_gate_len = nlen
 
     while len(self.cur_gate) < cur_gate_len:
       if self.nxt_gate is not None:
@@ -91,19 +90,26 @@ class Game:
 
   def handle_game_put(self, idx:int, target_qubit:int, control_qubit:int=None) -> HandlerRet:
     # check
-    assert idx > 0 and idx < len(self.cur_gate)
-    assert target_qubit > 0 and target_qubit < self.n_qubit
+    assert idx >= 0 and idx < len(self.cur_gate)
+    assert target_qubit >= 0 and target_qubit < self.n_qubit
     if control_qubit is not None:
-      assert control_qubit > 0 and control_qubit < self.n_qubit
+      assert control_qubit >= 0 and control_qubit < self.n_qubit
+      assert control_qubit != target_qubit
     assert self.state == GameState.RUN
+    if self.cur_gate[idx].name in D_GATE:
+      assert control_qubit is not None
+    else:
+      assert control_qubit is None
 
     # player data change marker
     pick = set()
 
     # settle circuit operation
-    gate = self.cur_gate.pop(idx)
+    xgate = self.cur_gate.pop(idx)
     pick.add('cur_gate')
-    ret = settle_circuit(self.circuit, IGate(gate.name, gate.param, target_qubit, control_qubit))
+    gate = IGate(xgate.name, xgate.param, target_qubit, control_qubit)
+    assert check_gate_put(self.circuit, gate, self.n_qubit, self.n_depth)
+    ret = settle_circuit(self.circuit, gate)
     self.circuit = ret.circuit
     pick.add('circuit')
     self.score += ret.score
@@ -126,7 +132,7 @@ class Game:
       pick.add('state')
       self.ts_end = int(time())
       pick.add('ts_end')
-    return HandlerRet(data={'settle_type': ret.type.value}, playerdata=self.json(pick))
+    return HandlerRet(data={'settle_type': ret.type}, playerdata=self.json(pick))
 
   def handle_game_hint(self) -> HandlerRet:
     # check
@@ -147,7 +153,7 @@ class Game:
           hint_case = {
             'idx': idx,
             'target_qubit': target_qubit,
-            'settle_type': ret.type.value,
+            'settle_type': ret.type,
             'effected_gates': ret.effected_gates,
             'score': ret.score,
           }
@@ -156,3 +162,14 @@ class Game:
           hint_cases.append(hint_case)
 
     return HandlerRet(data={'hint_cases': hint_cases}, playerdata=self.json({'token'}))
+
+  def handle_cheat_item(self, item:str, count:int) -> HandlerRet:
+    # check
+    assert item in ['score', 'token']
+    assert count > 0
+
+    if item == 'score':
+      self.score += count
+    elif item == 'token':
+      self.token += count
+    return HandlerRet(playerdata=self.json({item}))

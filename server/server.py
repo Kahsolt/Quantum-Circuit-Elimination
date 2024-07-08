@@ -3,18 +3,14 @@
 # Create Time: 2024/07/07 
 
 from argparse import ArgumentParser
+from traceback import format_exc
 
 from flask import Flask, render_template, request
-from app.game import Game, GameState
+from app.game import Game
 from app.hist import Hist, Record
 from app.utils import WWWROOT, HandlerRet, resp_ok, resp_error, rand_string
 
-app = Flask(
-  __file__,
-  template_folder=WWWROOT,
-  static_folder=WWWROOT,
-  static_url_path='',
-)
+app = Flask( __file__, template_folder=WWWROOT, static_folder=WWWROOT, static_url_path='')
 
 
 @app.route('/', methods=['GET'])
@@ -24,9 +20,12 @@ def root():
 
 @app.route('/game/create', methods=['POST'])
 def game_create():
-  game = Game()
-  game.handle_game_create()
-  return resp_ok(playerdata=game.json())
+  try:
+    game = Game()
+    game.handle_game_create()
+    return resp_ok(HandlerRet(playerdata=game.json()))
+  except:
+    return resp_error(format_exc())
 
 
 @app.route('/game/settle', methods=['POST'])
@@ -35,18 +34,17 @@ def game_settle():
     rdata = request.json
     game = Game.INSTANCES[rdata['id']]
 
-    name = rdata.get('name', f'Anonymous-{rand_string()}')
-    assert isinstance(name, str) and len(name)
+    name = rdata.get('name', rand_string())
+    assert isinstance(name, str) and len(name) and len(name) <= 32
 
     ret = game.handle_game_settle()
     is_new = Hist.update_record(Record(name, game.score, game.bingo, game.ts_end))
-    ret.data = {'is_new': is_new}
-    resp = resp_ok(ret)
+    resp = resp_ok(HandlerRet(data={'is_new': is_new}, playerdata=ret.playerdata))
 
     del Game.INSTANCES[game.id]
     return resp
-  except Exception as e:
-    return resp_error(msg=e)
+  except:
+    return resp_error(format_exc())
 
 
 @app.route('/game/put', methods=['POST'])
@@ -63,9 +61,9 @@ def game_put():
     if control_qubit is not None:
       assert isinstance(control_qubit, int)
 
-    return game.handle_game_put(idx, target_qubit, control_qubit)
-  except Exception as e:
-    return resp_error(msg=e)
+    return resp_ok(game.handle_game_put(idx, target_qubit, control_qubit))
+  except:
+    return resp_error(format_exc())
 
 
 @app.route('/game/hint', methods=['POST'])
@@ -74,9 +72,25 @@ def game_hint():
     rdata = request.json
     game = Game.INSTANCES[rdata['id']]
 
-    return game.handle_game_hint()
-  except Exception as e:
-    return resp_error(msg=e)
+    return resp_ok(game.handle_game_hint())
+  except:
+    return resp_error(format_exc())
+
+
+@app.route('/cheat/item', methods=['POST'])
+def cheat_item():
+  try:
+    rdata = request.json
+    game = Game.INSTANCES[rdata['id']]
+
+    item = rdata['item']
+    assert isinstance(item, str)
+    count = rdata.get('count', 10)
+    assert isinstance(count, int)
+
+    return resp_ok(game.handle_cheat_item(item, count))
+  except:
+    return resp_error(format_exc())
 
 
 @app.route('/hist/list', methods=['GET'])
@@ -93,8 +107,8 @@ def hist_list():
 
     hist_list = Hist.get_list_hist(offset, limit)
     return resp_ok(HandlerRet(data={'hist': hist_list}))
-  except Exception as e:
-    return resp_error(msg=e)
+  except:
+    return resp_error(format_exc())
 
 
 @app.route('/hist/rank', methods=['GET'])
@@ -110,8 +124,8 @@ def hist_rank():
 
     rank_list = Hist.get_list_rank(order_by, limit)
     return resp_ok(HandlerRet(data={'rank': rank_list}))
-  except Exception as e:
-    return resp_error(msg=e)
+  except:
+    return resp_error(format_exc())
 
 
 if __name__ == '__main__':
