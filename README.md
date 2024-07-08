@@ -8,11 +8,20 @@
 This project is for the quantum challenge 2024 from [第一届“天衍”量子计算挑战先锋赛-大众组](https://qc.zdxlz.com/learn/#/megagame/megagameDetail?id=1801135605315321857&lang=zh)  
 
 
+#### GamePlay
+
+- You will face with a 5-qubits 10-clock **quantum logical circuit**, and an infinite sequence of random spawned **quantum logical gates**, mimicking the traditional Tetris board and pieces 🤔
+- You are asked to select proper gates and **append** to the circuit, and the score is counted 😮
+- When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.25 😀
+- Whenever there is a sub-circuit that is equivalent to the identity matrix, that whole part will be **eliminated (Bingo!)** with score ratio x3 🎉🎉
+- Every 5 Bingo, you'll have an additional **hint token**. Use it to view hints of the placement results derived from the current circuit configuration and your accessible gates! 🤗
+
+
 #### References
 
 ⚪ Citation
 
-If you find this work useful, please give a star ⭐ and cite~ 😃
+If you find this work useful, please give a star ⭐ and cite 📖~
 
 ```
 @misc{kahsolt2024,
@@ -41,13 +50,6 @@ If you find this work useful, please give a star ⭐ and cite~ 😃
 - QuanTetrum (Quantum Game Hackathon 2021)
   - repo: https://github.com/darkknightgit/QuanTetrum
   - demo video: https://www.youtube.com/watch?v=DlKU3qC7mQc
-
-⚪ Javascript library for quantum circuit
-
-- https://github.com/stewdio/q.js
-- https://github.com/microsoft/quantum-viz.js
-- https://github.com/Strilanc/Quirk
-- https://github.com/quantastica/quantum-circuit
 
 ----
 by Armit
