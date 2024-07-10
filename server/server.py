@@ -12,6 +12,15 @@ from app.utils import WWWROOT, HandlerRet, resp_ok, resp_error, rand_string
 
 app = Flask( __file__, template_folder=WWWROOT, static_folder=WWWROOT, static_url_path='')
 
+# https://blog.csdn.net/hwhsong/article/details/84959755
+def allow_CORS(resp):
+  resp.headers['Content-Type'] = 'application/json;charset=UTF-8'
+  resp.headers['Access-Control-Allow-Origin'] = '*'
+  resp.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
+  resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+  return resp
+app.after_request(allow_CORS)
+
 
 @app.route('/', methods=['GET'])
 def root():
@@ -98,11 +107,9 @@ def hist_list():
   try:
     rdata = request.args
 
-    offset = rdata.get('offset', 0)
-    assert isinstance(offset, int)
+    offset = int(rdata.get('offset', 0))
     assert offset >= 0
-    limit = rdata.get('limit', 30)
-    assert isinstance(limit, int)
+    limit = int(rdata.get('limit', 30))
     assert limit > 0 and limit <= 100
 
     hist_list = Hist.get_list_hist(offset, limit)
@@ -118,8 +125,7 @@ def hist_rank():
 
     order_by = rdata.get('order_by', 'score')
     assert order_by in ['score', 'bingo']
-    limit = rdata.get('limit', 30)
-    assert isinstance(limit, int)
+    limit = int(rdata.get('limit', 30))
     assert limit > 0 and limit <= 100
 
     rank_list = Hist.get_list_rank(order_by, limit)
