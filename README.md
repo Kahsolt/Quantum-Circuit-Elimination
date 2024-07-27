@@ -1,10 +1,10 @@
-# Quantum-Circuit-Tetris
+# Quantum-Circuit-Elimination
 
-    The Quantum Circuit Tetris game, learning quantum logical circuit with fun :)
+    The Quantum Circuit Elimination game, learning quantum logical circuit with fun :)
 
 ----
 
-**Quantum Circuit Tetris** is inspired by Quantum Tetris, but actually is a Block Elimination Puzzle, plus a little bit 2048 game.  
+**Quantum Circuit Elimination** is inspired by Quantum Tetris, but actually is a Block Elimination Puzzle, plus a little bit 2048 game.  
 This project is for the quantum challenge 2024 from [第一届“天衍”量子计算挑战先锋赛-大众组](https://qc.zdxlz.com/learn/#/megagame/megagameDetail?id=1801135605315321857&lang=zh)  
 
 
@@ -13,8 +13,15 @@ This project is for the quantum challenge 2024 from [第一届“天衍”量子
 - You will face with a 5-qubits 10-clock **quantum logical circuit**, and an infinite sequence of random spawned **quantum logical gates**, mimicking the traditional Tetris board and pieces 🤔
 - You are asked to select proper gates and **append** to the circuit, and the score is counted 😮
 - When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.25 😀
-- Whenever there is a sub-circuit that is equivalent to the identity matrix, that whole part will be **eliminated (Bingo!)** with score ratio x3 🎉🎉
-- Every 5 Bingo, you'll have an additional **hint token**. Use it to view hints of the placement results derived from the current circuit configuration and your accessible gates! 🤗
+- When two gates inversion (dagger!) of each other meet, they will be **eliminated (Bingo!)** with score ratio x3 🎉🎉
+- Every 10 bingos, you'll have an additional **removal token**. You can use it to remove an arbitrary gate! 🤗
+
+<details>
+<summary>Notes for the 1st gameplay design draft :(</summary>
+In the original design, if any sub-part of the circuit is equivalent to an identity matrix, it will **collapse** and we call this bingo!  
+Every 5 bingos, the player will be rewarded with a **hint token** to get hints about the placements.  
+However, implementing this requires O(2^n) computations and is extremely annoying... we have to step back.  
+</details>
 
 
 #### References
@@ -26,8 +33,8 @@ If you find this work useful, please give a star ⭐ and cite 📖~
 ```
 @misc{kahsolt2024,
   author = {Kahsolt},
-  title  = {Quantum-Circuit-Tetris},
-  howpublished = {\url{https://github.com/Kahsolt/Quantum-Circuit-Tetris}}
+  title  = {Quantum-Circuit-Elimination},
+  howpublished = {\url{https://github.com/Kahsolt/Quantum-Circuit-Elimination}}
   month  = {July},
   year   = {2024}
 }

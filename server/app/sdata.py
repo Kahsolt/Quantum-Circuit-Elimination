@@ -71,5 +71,5 @@ class GameConst:
   score_ratio_gate_fuse = 1.25
   # 量子门消解得分倍率
   score_ratio_gate_eliminate = 3
-  # 每 bingo 多少次，奖励一个 hint token
-  reward_token_every_k_bingo = 5
+  # 每 bingo 多少次，奖励一个 removal token
+  reward_token_every_k_bingo = 10

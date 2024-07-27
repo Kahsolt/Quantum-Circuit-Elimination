@@ -1,4 +1,4 @@
-This is a very simple CUI client for the Quantum Circuit Tetris game, but just enough for quick debugging :)  
+This is a very simple CUI client for the Quantum Circuit Elimination game, but just enough for quick debugging :)  
 
 ### Quick start
 

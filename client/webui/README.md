@@ -1,4 +1,4 @@
-This is a basic WebUI client for the Quantum Circuit Tetris game :)  
+This is a basic WebUI client for the Quantum Circuit Elimination game :)  
 
 ### Quick start
 
