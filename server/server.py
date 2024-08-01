@@ -5,7 +5,7 @@
 from argparse import ArgumentParser
 from traceback import format_exc
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 from app.game import Game
 from app.hist import Hist, Record
 from app.utils import WWWROOT, HandlerRet, resp_ok, resp_error, rand_string
@@ -13,8 +13,7 @@ from app.utils import WWWROOT, HandlerRet, resp_ok, resp_error, rand_string
 app = Flask( __file__, template_folder=WWWROOT, static_folder=WWWROOT, static_url_path='')
 
 # https://blog.csdn.net/hwhsong/article/details/84959755
-def allow_CORS(resp):
-  resp.headers['Content-Type'] = 'application/json;charset=UTF-8'
+def allow_CORS(resp:Response):
   resp.headers['Access-Control-Allow-Origin'] = '*'
   resp.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
   resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
@@ -75,13 +74,16 @@ def game_put():
     return resp_error(format_exc())
 
 
-@app.route('/game/hint', methods=['POST'])
-def game_hint():
+@app.route('/game/del', methods=['POST'])
+def game_del():
   try:
     rdata = request.json
     game = Game.INSTANCES[rdata['id']]
 
-    return resp_ok(game.handle_game_hint())
+    idx = rdata['idx']
+    assert isinstance(idx, int)
+
+    return resp_ok(game.handle_game_del(idx))
   except:
     return resp_error(format_exc())
 

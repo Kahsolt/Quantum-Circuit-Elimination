@@ -32,7 +32,7 @@ except ImportError:
   IS_PYQPANDA_AVAILABLE = False
 
 
-D_GATES = ['CNOT', 'CZ', 'SWAP', 'iSWAP']
+D_GATES = ['CNOT', 'CZ', 'SWAP']
 P_GATES = ['RX', 'RY', 'RZ']
 
 @dataclass
@@ -61,7 +61,7 @@ class IGate:
   def __repr__(self):
     s = f'{self.name}'
     s += f'(q{self.target_qubit}'
-    if self.control_qubit:
+    if self.control_qubit is not None:
       s += f', q{self.control_qubit}'
     if self.param:
       frac = Fraction(round(self.param / pi, 2))
@@ -154,8 +154,10 @@ def API_game_put(idx:int, target_qubit:int, control_qubit:int=None):
   })
   return resp
 
-def API_game_hint():
-  resp = POST('/game/hint')
+def API_game_del(idx:int):
+  resp = POST('/game/del', {
+    'idx': idx,
+  })
   return resp
 
 def API_cheat_item(item:str, count:int):
@@ -174,7 +176,6 @@ def clear_screen():
 
 def draw_circuit_pennylane():
   GATE_NAME_MAPPING = {
-    'iSWAP': 'ISWAP',
     'H': 'Hadamard',
   }
   dev = qml.device('default.qubit', wires=playerdata.n_qubit)
@@ -192,10 +193,6 @@ def draw_circuit_pennylane():
       else:   # G is None, need translate
         if   gate.name == 'TD':  qml.RZ(-pi / 4, wires=q)
         elif gate.name == 'SD':  qml.RZ(-pi / 2, wires=q)
-        elif gate.name == 'X2P': qml.RX( pi / 2, wires=q)
-        elif gate.name == 'X2M': qml.RX(-pi / 2, wires=q)
-        elif gate.name == 'Y2P': qml.RY( pi / 2, wires=q)
-        elif gate.name == 'Y2M': qml.RY(-pi / 2, wires=q)
         else:
           print('>> unknown gate:', gate.name)
           breakpoint()
@@ -219,10 +216,6 @@ def draw_circuit_pyqpanda():
     else:   # G is None, need translate
       if   gate.name == 'TD':  qcir << pq.RZ(q, -pi / 4)
       elif gate.name == 'SD':  qcir << pq.RZ(q, -pi / 2)
-      elif gate.name == 'X2P': qcir << pq.RX(q,  pi / 2)
-      elif gate.name == 'X2M': qcir << pq.RX(q, -pi / 2)
-      elif gate.name == 'Y2P': qcir << pq.RY(q,  pi / 2)
-      elif gate.name == 'Y2M': qcir << pq.RY(q, -pi / 2)
       else:
         print('>> unknown gate:', gate.name)
         breakpoint()
@@ -240,6 +233,8 @@ def print_panel_help():
   print('[Game Commands]')
   print(f'  <idx> <target_qubit> [control_qubit]')
   print(f'      put the idx-th cur gate on target_qubit and (optional) control_qubit')
+  print(f'  d <idx>')
+  print(f'      delete the idx-th gate in circuit')
   print(f'  !<score|token> [count]')
   print(f'      cheat get item')
   print()
@@ -307,6 +302,11 @@ def run():
       if cmd in ['reset', 'r']:
         API_game_settle()
         API_game_create()
+        continue
+
+      if cmd.startswith('d'):
+        idx = int(cmd.split(' ')[-1])
+        API_game_del(idx)
         continue
 
       if cmd.startswith('!'):

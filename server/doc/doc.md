@@ -25,18 +25,12 @@ enum GameState {
   END  = 'END'
 }
 
-enum SettleType {
-  Append    = 'Append'
-  Fuse      = 'Fuse'
-  Eliminate = 'Eliminate'
-}
-
 // representing a detached gate
 // schema: [gate_name, param]
 // e.g.: 
 //   ["X", null]
 //   ["RZ", 2.33]
-//   ["SWAP", null]
+//   ["CNOT", null]
 type XGate = [str, float | null]
 
 // representing an attached gate in the ciruit
@@ -54,7 +48,7 @@ interface PlayerData {
   cur_gate: XGate[]   // 当前可拖动的门
   nxt_gate: XGate     // 预备可用的门
   score: int          // 当前得分
-  token: int          // 提示道具数量
+  token: int          // 删除门道具数量
   bingo: int          // 消去次数
   n_qubit: int        // 当前线路宽度
   n_depth: int        // 当前线路最大深度
@@ -102,27 +96,19 @@ interface Request {
   control_qubit?: int
 }
 interface ResponseData {
-  settle_type: SettleType
+
 }
 ```
 
-### POST /game/hint 给予提示
+### POST /game/del 删除门
 
 ```typescript
 interface Request {
-  id: str                     // 游戏ID
+  id: str               // 游戏ID
+  idx: int              // 待删除门在 circuit 中的下标
 }
 interface ResponseData {
-  hint_cases: [               // 发生合并/消去的情况
-    {
-      idx: int                // 选择 cur_gate 的下标
-      target_qubit: int
-      control_qubit?: int
-      settle_type: SettleType
-      effected_gates: int[]   // 受影响的门在 circuit 中的下标列表
-      score: int              // 预计得分
-    }
-  ]
+
 }
 ```
 

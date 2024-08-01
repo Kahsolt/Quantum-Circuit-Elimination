@@ -12,11 +12,10 @@ const PI = 3.14159265358979;
 const CUR_GATE_MAX = 3;
 var N_QUBIT = 5;
 var N_DEPTH = 10;
-const D_GATE = ['CNOT', 'CZ', 'SWAP', 'iSWAP'];
+const D_GATE = ['CNOT', 'CZ', 'SWAP'];
 
 var playername = Math.random().toString(36).slice(-8).toUpperCase();
 var playerdata = null;
-var hint_cases = null;
 var dragging_block = null;
 var line_end_blocks = [];
 var is_selecting_ctrlbit = false;
@@ -361,14 +360,15 @@ function API_game_put(idx, target_qubit, control_qubit=null) {
     'target_qubit': target_qubit,
     'control_qubit': control_qubit,
   }, r => {
-    hint_cases = null;
     updateUI();
   })
 }
 
-function API_game_hint() {
-  POST('/game/hint', {}, r => {
-    hint_cases = r.hint_cases;
+function API_game_del(idx) {
+  POST('/game/del', {
+    'idx': idx,
+  }, r => {
+    updateUI();
   });
 }
 

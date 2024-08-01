@@ -12,9 +12,10 @@ This project is for the quantum challenge 2024 from [第一届“天衍”量子
 
 - You will face with a 5-qubits 10-clock **quantum logical circuit**, and an infinite sequence of random spawned **quantum logical gates**, mimicking the traditional Tetris board and pieces 🤔
 - You are asked to select proper gates and **append** to the circuit, and the score is counted 😮
-- When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.25 😀
+- When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.5 😀
 - When two gates inversion (dagger!) of each other meet, they will be **eliminated (Bingo!)** with score ratio x3 🎉🎉
-- Every 10 bingos, you'll have an additional **removal token**. You can use it to remove an arbitrary gate! 🤗
+- Every 5 bingos, you'll have an additional **removal token**. You can use it to remove an arbitrary gate! 🤗
+- Note that SWAP is NOT the the quantum SWAP gate, it can swap locations of two single-qubit gates! 😈
 
 <details>
 <summary>Notes for the 1st gameplay design draft :(</summary>

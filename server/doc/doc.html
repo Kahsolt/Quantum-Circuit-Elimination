@@ -43,18 +43,12 @@
   <span class="token constant">END</span>  <span class="token operator">=</span> <span class="token string">'END'</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword keyword-enum">enum</span> SettleType <span class="token punctuation">{</span>
-  Append    <span class="token operator">=</span> <span class="token string">'Append'</span>
-  Fuse      <span class="token operator">=</span> <span class="token string">'Fuse'</span>
-  Eliminate <span class="token operator">=</span> <span class="token string">'Eliminate'</span>
-<span class="token punctuation">}</span>
-
 <span class="token comment">// representing a detached gate</span>
 <span class="token comment">// schema: [gate_name, param]</span>
 <span class="token comment">// e.g.: </span>
 <span class="token comment">//   ["X", null]</span>
 <span class="token comment">//   ["RZ", 2.33]</span>
-<span class="token comment">//   ["SWAP", null]</span>
+<span class="token comment">//   ["CNOT", null]</span>
 <span class="token keyword keyword-type">type</span> <span class="token class-name">XGate</span> <span class="token operator">=</span> <span class="token punctuation">[</span>str<span class="token punctuation">,</span> float <span class="token operator">|</span> <span class="token keyword keyword-null">null</span><span class="token punctuation">]</span>
 
 <span class="token comment">// representing an attached gate in the ciruit</span>
@@ -72,7 +66,7 @@
   cur_gate<span class="token operator">:</span> XGate<span class="token punctuation">[</span><span class="token punctuation">]</span>   <span class="token comment">// 当前可拖动的门</span>
   nxt_gate<span class="token operator">:</span> XGate     <span class="token comment">// 预备可用的门</span>
   score<span class="token operator">:</span> int          <span class="token comment">// 当前得分</span>
-  token<span class="token operator">:</span> int          <span class="token comment">// 提示道具数量</span>
+  token<span class="token operator">:</span> int          <span class="token comment">// 删除门道具数量</span>
   bingo<span class="token operator">:</span> int          <span class="token comment">// 消去次数</span>
   n_qubit<span class="token operator">:</span> int        <span class="token comment">// 当前线路宽度</span>
   n_depth<span class="token operator">:</span> int        <span class="token comment">// 当前线路最大深度</span>
@@ -107,23 +101,15 @@
   control_qubit<span class="token operator">?</span><span class="token operator">:</span> int
 <span class="token punctuation">}</span>
 <span class="token keyword keyword-interface">interface</span> <span class="token class-name">ResponseData</span> <span class="token punctuation">{</span>
-  settle_type<span class="token operator">:</span> SettleType
+
 <span class="token punctuation">}</span>
-</code></pre><h3 id="post-gamehint-给予提示">POST /game/hint 给予提示 </h3>
+</code></pre><h3 id="post-gamedel-删除门">POST /game/del 删除门 </h3>
 <pre data-role="codeBlock" data-info="typescript" class="language-typescript typescript"><code><span class="token keyword keyword-interface">interface</span> <span class="token class-name">Request</span> <span class="token punctuation">{</span>
-  id<span class="token operator">:</span> str                     <span class="token comment">// 游戏ID</span>
+  id<span class="token operator">:</span> str               <span class="token comment">// 游戏ID</span>
+  idx<span class="token operator">:</span> int              <span class="token comment">// 待删除门在 circuit 中的下标</span>
 <span class="token punctuation">}</span>
 <span class="token keyword keyword-interface">interface</span> <span class="token class-name">ResponseData</span> <span class="token punctuation">{</span>
-  hint_cases<span class="token operator">:</span> <span class="token punctuation">[</span>               <span class="token comment">// 发生合并/消去的情况</span>
-    <span class="token punctuation">{</span>
-      idx<span class="token operator">:</span> int                <span class="token comment">// 选择 cur_gate 的下标</span>
-      target_qubit<span class="token operator">:</span> int
-      control_qubit<span class="token operator">?</span><span class="token operator">:</span> int
-      settle_type<span class="token operator">:</span> SettleType
-      effected_gates<span class="token operator">:</span> int<span class="token punctuation">[</span><span class="token punctuation">]</span>   <span class="token comment">// 受影响的门在 circuit 中的下标列表</span>
-      score<span class="token operator">:</span> int              <span class="token comment">// 预计得分</span>
-    <span class="token punctuation">}</span>
-  <span class="token punctuation">]</span>
+
 <span class="token punctuation">}</span>
 </code></pre><hr>
 <h3 id="post-cheatitem-作弊-获取物品">POST /cheat/item 作弊: 获取物品 </h3>

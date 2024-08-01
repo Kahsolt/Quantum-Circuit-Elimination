@@ -27,7 +27,7 @@ class Game:
     # playerdata
     self.id = str(uuid1())
     self.state = GameState.INIT
-    self.circuit = ICircuit()
+    self.circuit = ICircuit(GameConst.n_qubit)
     self.cur_gate: List[XGate] = []
     self.nxt_gate: XGate = None
     self.score = 0
@@ -71,9 +71,9 @@ class Game:
         self.cur_gate.append(self.nxt_gate)
         self.nxt_gate = None
       else:
-        self.cur_gate.append(rand_gate())
+        self.cur_gate.append(rand_xgate())
     if self.nxt_gate is None:
-      self.nxt_gate = rand_gate()
+      self.nxt_gate = rand_xgate()
   
   def handle_game_create(self) -> HandlerRet:
     # check
@@ -90,31 +90,61 @@ class Game:
 
   def handle_game_put(self, idx:int, target_qubit:int, control_qubit:int=None) -> HandlerRet:
     # check
-    assert idx >= 0 and idx < len(self.cur_gate)
-    assert target_qubit >= 0 and target_qubit < self.n_qubit
-    if control_qubit is not None:
-      assert control_qubit >= 0 and control_qubit < self.n_qubit
-      assert control_qubit != target_qubit
     assert self.state == GameState.RUN
-    if self.cur_gate[idx].name in D_GATE:
-      assert control_qubit is not None
+    assert 0 <= idx < len(self.cur_gate)
+    gname = self.cur_gate[idx].name
+    isSWAP = gname == 'SWAP'    # special case
+    isSWAP_give_up = False      # 场上剩余门不够的情况下，自动放弃操作
+    if isSWAP:
+      if target_qubit == control_qubit == -1:
+        isSWAP_give_up = True
+      else:
+        assert 0 <= target_qubit  < len(self.circuit)
+        assert 0 <= control_qubit < len(self.circuit)
+        igate_A = self.circuit[target_qubit]
+        igate_B = self.circuit[control_qubit]
+        assert igate_A.control_qubit is None
+        assert igate_B.control_qubit is None
     else:
-      assert control_qubit is None
+      if gname in D_GATE:
+        assert control_qubit is not None
+      else:
+        assert control_qubit is None
+      assert 0 <= target_qubit < self.n_qubit
+      if control_qubit is not None:
+        assert 0 <= control_qubit < self.n_qubit
+        assert control_qubit != target_qubit
 
     # player data change marker
     pick = set()
 
-    # settle circuit operation
+    # operation
     xgate = self.cur_gate.pop(idx)
     pick.add('cur_gate')
-    gate = IGate(xgate.name, xgate.param, target_qubit, control_qubit)
-    assert check_gate_put(self.circuit, gate, self.n_qubit, self.n_depth)
-    ret = settle_circuit(self.circuit, gate)
+    if isSWAP:    # swap location of two single-qubit gate
+      if not isSWAP_give_up:
+        gates = self.circuit.gates
+        idx_A = gates.index(igate_A)
+        idx_B = gates.index(igate_B)
+        tmp = gates[idx_A]
+        gates[idx_A] = gates[idx_B]
+        gates[idx_B] = tmp
+    else:         # append to circuit
+      igate = IGate(xgate.name, target_qubit, xgate.param, control_qubit)
+      assert check_gate_can_put(self.circuit, igate, self.n_qubit, self.n_depth)
+      self.circuit.append(igate)
+    # circuit
+    ret = settle_circuit(self.circuit)
     self.circuit = ret.circuit
     pick.add('circuit')
+    # fuse/elim => score
     self.score += ret.score
+    # append => score
+    if ret.n_elim == ret.n_fuse == 0:
+      self.score += int(GameConst.score_gate[xgate.name] * GameConst.score_ratio_gate_append)
     pick.add('score')
-    if ret.type == SettleType.Eliminate:
+    # bingo => token
+    for _ in range(ret.n_elim):
       self.bingo += 1
       pick.add('bingo')
       if self.bingo % GameConst.reward_token_every_k_bingo == 0:
@@ -125,43 +155,42 @@ class Game:
     self.shift_gate_queue()
     pick.add('cur_gate')
     pick.add('nxt_gate')
-
     # check dead
-    if check_circuit_full(self.circuit, self.cur_gate, self.n_qubit, self.n_depth):
+    if check_circuit_is_full(self.circuit, self.cur_gate, self.n_qubit, self.n_depth):
       self.state = GameState.END
       pick.add('state')
       self.ts_end = int(time())
       pick.add('ts_end')
-    return HandlerRet(data={'settle_type': ret.type}, playerdata=self.json(pick))
+    return HandlerRet(playerdata=self.json(pick))
 
-  def handle_game_hint(self) -> HandlerRet:
+  def handle_game_del(self, idx:int) -> HandlerRet:
     # check
     assert self.state == GameState.RUN
+    assert 0 <= idx < len(self.circuit)
     assert self.token >= 1
+
+    # player data change marker
+    pick = set()
+
+    # token
     self.token -= 1
-
-    hint_cases = []
-    for idx, gate in enumerate(self.cur_gate):
-      control_qubits = [None] if gate.name in D_GATE else range(self.n_qubit)
-      for target_qubit in range(self.n_qubit):
-        for control_qubit in control_qubits:
-          if target_qubit == control_qubit: continue
-
-          ret = settle_circuit(self.circuit, IGate(gate.name, gate.param, target_qubit, control_qubit))
-          if ret.type == SettleType.Append: continue
-
-          hint_case = {
-            'idx': idx,
-            'target_qubit': target_qubit,
-            'settle_type': ret.type,
-            'effected_gates': ret.effected_gates,
-            'score': ret.score,
-          }
-          if control_qubit is not None:
-            hint_case['control_qubit'] = control_qubit
-          hint_cases.append(hint_case)
-
-    return HandlerRet(data={'hint_cases': hint_cases}, playerdata=self.json({'token'}))
+    pick.add('token')
+    # circuit
+    self.circuit.remove(idx)
+    ret = settle_circuit(self.circuit)
+    self.circuit = ret.circuit
+    pick.add('circuit')
+    # fuse/elim => score
+    self.score += ret.score
+    pick.add('score')
+    # bingo => token
+    for _ in range(ret.n_elim):
+      self.bingo += 1
+      pick.add('bingo')
+      if self.bingo % GameConst.reward_token_every_k_bingo == 0:
+        self.token += 1
+        pick.add('token')
+    return HandlerRet(playerdata=self.json(pick))
 
   def handle_cheat_item(self, item:str, count:int) -> HandlerRet:
     # check
