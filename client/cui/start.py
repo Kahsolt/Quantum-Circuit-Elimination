@@ -270,6 +270,9 @@ def print_panel_main():
 
   print('Cur Gate:', playerdata.cur_gate)
   print('Next Gate:', playerdata.nxt_gate)
+  print('===================================')
+  print('Score:', playerdata.score)
+  print('Token:', playerdata.token)
   print()
 
 def run():

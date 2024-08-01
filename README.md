@@ -8,14 +8,35 @@
 This project is for the quantum challenge 2024 from [第一届“天衍”量子计算挑战先锋赛-大众组](https://qc.zdxlz.com/learn/#/megagame/megagameDetail?id=1801135605315321857&lang=zh)  
 
 
+#### Screenshot
+
+⚪ CUI
+
+![cui](./img/cui.png)
+
+⚪ WebUI (⚠ still under development...)
+
+![webui](./img/webui.png)
+
+
+#### How to start
+
+ℹ So far only the ugly CUI client works... 😓
+
+- `cd server; python server.py`
+- `cd client\cui; python start.py`
+  - enter `h` for command help
+  - run in debug mode: `python start.py --debug`
+
+
 #### GamePlay
 
-- You will face with a 5-qubits 10-clock **quantum logical circuit**, and an infinite sequence of random spawned **quantum logical gates**, mimicking the traditional Tetris board and pieces 🤔
-- You are asked to select proper gates and **append** to the circuit, and the score is counted 😮
-- When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.5 😀
+- You will face with a 5-qubits 10-clock **quantum logical circuit**, and an infinite sequence of random spawned **quantum logical gates**, mimicking the traditional Tetris board and pieces
+- You are asked to select proper gates and **append** to the circuit, and the score is counted
+- When two rotation gates of the same axis meet, they'll be **merged** with a score ratio x1.5
 - When two gates inversion (dagger!) of each other meet, they will be **eliminated (Bingo!)** with score ratio x3 🎉🎉
-- Every 5 bingos, you'll have an additional **removal token**. You can use it to remove an arbitrary gate! 🤗
-- Note that SWAP is NOT the the quantum SWAP gate, it can swap locations of two single-qubit gates! 😈
+- Every 5 bingos, you'll have an additional **removal token**. You can use it to remove an arbitrary gate!
+- Note that SWAP is NOT the the quantum SWAP gate, it can swap locations of two single-qubit gates!
 
 <details>
 <summary>Notes for the 1st gameplay design draft :(</summary>
@@ -26,20 +47,6 @@ However, implementing this requires O(2^n) computations and is extremely annoyin
 
 
 #### References
-
-⚪ Citation
-
-If you find this work useful, please give a star ⭐ and cite 📖~
-
-```
-@misc{kahsolt2024,
-  author = {Kahsolt},
-  title  = {Quantum-Circuit-Elimination},
-  howpublished = {\url{https://github.com/Kahsolt/Quantum-Circuit-Elimination}}
-  month  = {July},
-  year   = {2024}
-}
-```
 
 ⚪ Other Tetris-inspired quantum games
 
@@ -58,6 +65,18 @@ If you find this work useful, please give a star ⭐ and cite 📖~
 - QuanTetrum (Quantum Game Hackathon 2021)
   - repo: https://github.com/darkknightgit/QuanTetrum
   - demo video: https://www.youtube.com/watch?v=DlKU3qC7mQc
+
+If you find this work useful, please give a star ⭐ and cite~
+
+```
+@misc{kahsolt2024,
+  author = {Kahsolt},
+  title  = {Quantum-Circuit-Elimination},
+  howpublished = {\url{https://github.com/Kahsolt/Quantum-Circuit-Elimination}}
+  month  = {July},
+  year   = {2024}
+}
+```
 
 ----
 by Armit
