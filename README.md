@@ -28,6 +28,18 @@ This project is for the quantum challenge 2024 from [第一届“天衍”量子
   - enter `h` for command help
   - run in debug mode: `python start.py --debug`
 
+```
+[Commands & Examples]
+  cmd: <gate_idx> <target_qubit> [control_qubit]
+    0 3         # put the 0-th gate in candidate slots on qubit 3
+    2 0 4       # put the 2-th gate in candidate slots on qubit 0 and qubit 4
+  d <idx>
+    d 5         # delete the 5-th gate in the circuit (i.e.: gate list)
+  !<score|token> [count]
+    !score 10   # cheat, give 10 scores
+    !token 2    # cheat, give 2 tokens
+```
+
 
 #### GamePlay
 
