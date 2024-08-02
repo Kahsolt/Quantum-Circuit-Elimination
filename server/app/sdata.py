@@ -31,7 +31,7 @@ class GameConst:
     'CNOT': 15,
     'CZ': 15,
     # ↓ this is NOT a gate, but an virtual action
-    'SWAP': 3,
+    'SWAP': 5,
   }
   gate_pool_names = list(gate_pool.keys())
   gate_pool_weights = np.asarray(list(gate_pool.values()))

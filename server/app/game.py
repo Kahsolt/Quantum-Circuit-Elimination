@@ -124,11 +124,14 @@ class Game:
     if isSWAP:    # swap location of two single-qubit gate
       if not isSWAP_give_up:
         gates = self.circuit.gates
-        idx_A = gates.index(igate_A)
-        idx_B = gates.index(igate_B)
-        tmp = gates[idx_A]
-        gates[idx_A] = gates[idx_B]
-        gates[idx_B] = tmp
+        # 先交换指令位序
+        tmp = gates[target_qubit]
+        gates[target_qubit] = gates[control_qubit]
+        gates[control_qubit] = tmp
+        # 再交换所在线缆
+        tmp = gates[target_qubit].target_qubit
+        gates[target_qubit].target_qubit = gates[control_qubit].target_qubit
+        gates[control_qubit].target_qubit = tmp
     else:         # append to circuit
       igate = IGate(xgate.name, target_qubit, xgate.param, control_qubit)
       assert check_gate_can_put(self.circuit, igate, self.n_qubit, self.n_depth)
