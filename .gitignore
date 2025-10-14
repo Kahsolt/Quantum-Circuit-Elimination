@@ -1,9 +1,3 @@
 # meta
 .vscode/
 __pycache__/
-
-# submit doc
-doc/design.pdf
-doc/report.pptx
-doc/description.docx
-doc/rec/
